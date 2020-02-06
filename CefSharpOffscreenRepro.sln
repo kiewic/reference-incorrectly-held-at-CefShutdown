@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CefSharpOffscreenRepro", "CefSharpOffscreenRepro\CefSharpOffscreenRepro.csproj", "{051553F3-4893-4022-9DE3-CD51B9C5E92A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{051553F3-4893-4022-9DE3-CD51B9C5E92A}.Debug|x64.ActiveCfg = Debug|x64
+		{051553F3-4893-4022-9DE3-CD51B9C5E92A}.Debug|x64.Build.0 = Debug|x64
+		{051553F3-4893-4022-9DE3-CD51B9C5E92A}.Release|x64.ActiveCfg = Release|x64
+		{051553F3-4893-4022-9DE3-CD51B9C5E92A}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E99F4BB9-F92E-4983-8230-387553DA7405}
+	EndGlobalSection
+EndGlobal
