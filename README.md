@@ -1,15 +1,15 @@
 # FATAL:shutdown_checker.cc: Check failed: !IsCefShutdown(). Object reference incorrectly held at CefShutdown
 
-Assert fail:
+Exception/assert-failure using CefhSharp OffScreen:
 
 ```
 [0204/140114.330:FATAL:shutdown_checker.cc(52)] Check failed: !IsCefShutdown(). Object reference incorrectly held at CefShutdown
 [0204/140726.019:ERROR:browser_process_sub_thread.cc(221)] Waited 42 ms for network service
 ```
 
-We are loading a page, and as soon as it completes loading, we terminate the process. You can see the repro source code [here](https://todo).
+I am loading a page, and as soon as it completes loading, I call `Cef.Shutdown()` and the process exits. You can see the source code [here](CefSharpOffscreenRepro/Program.cs).
 
-The issue reproduces in CefSharp 75, but I haven't been able to reproduce with CefSharp 79. I see some CEF fixes with similar callstacks, but in those cases they are talking about **process crashes**, and in my case, the warning is just printed to console or it only breaks when the app is attached to a debugger.
+The issue reproduces in CefSharp 75, but I haven't been able to test with CefSharp 79. I see [similar CEF fixes](https://bitbucket.org/chromiumembedded/cef/commits/c7345f21bede2ad5a6831fcc1457494e589c7c4d?at=3904), but in those cases people mention that the **process crashes**, and in my case, the warning is just printed to the output stream or it only breaks when the app is attached to a debugger.
 
 The faulting callstack is:
 
@@ -41,7 +41,7 @@ The faulting callstack is:
 13 ntdll!RtlUserThreadStart
 ```
 
-Notice that the Main thread already started the shutdown:
+But notice that at the same time the main thread has already started the shutdown:
 
 ```
    0  Id: e9ec.98dc Suspend: 1 Teb: 000000d9`79bb9000 Unfrozen
@@ -71,6 +71,8 @@ Notice that the Main thread already started the shutdown:
 16 KERNEL32!BaseThreadInitThunk
 17 ntdll!RtlUserThreadStart
 ```
+
+The faulting callstack is not always the same. You can see some variations in [here](https://github.com/kiewic/reference-incorrectly-held-at-CefShutdown#failure-callstack-variations).
 
 # Failure callstack variations
 
@@ -157,5 +159,3 @@ And sometimes it happens at:
 2a KERNEL32!BaseThreadInitThunk
 2b ntdll!RtlUserThreadStart
 ```
-
-
