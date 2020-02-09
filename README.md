@@ -7,6 +7,67 @@ Exception/assert-failure using CefhSharp OffScreen:
 [0204/140726.019:ERROR:browser_process_sub_thread.cc(221)] Waited 42 ms for network service
 ```
 
+## Version 79.1.350
+
+Hello, I was able to reproduce the issue with CEF 79.1.350. I have opened created issue XYZ.
+
+To reproduce this issue, replace with Debug binaries of CEF. For example [Debug cef_binary_79.1.35+gfebbb4a+chromium-79.0.3945.130_windows64](cef_binary_79.1.35+gfebbb4a+chromium-79.0.3945.130_windows64).
+
+Version 79.1.350 crash callsatck:
+
+```
+00 libcef!logging::LogMessage::~LogMessage+0x647 [Y:\work\CEF3_git\chromium\src\base\logging.cc @ 954]
+01 libcef!shutdown_checker::AssertNotShutdown+0x78 [Y:\work\CEF3_git\chromium\src\cef\libcef_dll\shutdown_checker.cc @ 54]
+02 libcef!CefLifeSpanHandlerCToCpp::OnBeforeClose+0x29 [Y:\work\CEF3_git\chromium\src\cef\libcef_dll\ctocpp\life_span_handler_ctocpp.cc @ 150]
+03 libcef!CefBrowserHostImpl::DestroyBrowser+0xf3 [Y:\work\CEF3_git\chromium\src\cef\libcef\browser\browser_host_impl.cc @ 1539]
+04 libcef!CefBrowserInfoManager::DestroyAllBrowsers+0x13f [Y:\work\CEF3_git\chromium\src\cef\libcef\browser\browser_info_manager.cc @ 332]
+05 libcef!CefContext::FinishShutdownOnUIThread+0x7a [Y:\work\CEF3_git\chromium\src\cef\libcef\browser\context.cc @ 606]
+06 libcef!base::OnceCallback<void ()>::Run+0x61 [Y:\work\CEF3_git\chromium\src\base\callback.h @ 98]
+07 libcef!base::TaskAnnotator::RunTask+0x185 [Y:\work\CEF3_git\chromium\src\base\task\common\task_annotator.cc @ 142]
+08 libcef!base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl+0x1b5 [Y:\work\CEF3_git\chromium\src\base\task\sequence_manager\thread_controller_with_message_pump_impl.cc @ 366]
+09 libcef!base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoSomeWork+0x61 [Y:\work\CEF3_git\chromium\src\base\task\sequence_manager\thread_controller_with_message_pump_impl.cc @ 221]
+0a libcef!base::MessagePumpForUI::DoRunLoop+0x143 [Y:\work\CEF3_git\chromium\src\base\message_loop\message_pump_win.cc @ 219]
+0b libcef!base::MessagePumpWin::Run+0xa4 [Y:\work\CEF3_git\chromium\src\base\message_loop\message_pump_win.cc @ 77]
+0c libcef!base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run+0x129 [Y:\work\CEF3_git\chromium\src\base\task\sequence_manager\thread_controller_with_message_pump_impl.cc @ 467]
+0d libcef!base::RunLoop::Run+0x30e [Y:\work\CEF3_git\chromium\src\base\run_loop.cc @ 158]
+0e libcef!CefUIThread::ThreadMain+0x77 [Y:\work\CEF3_git\chromium\src\cef\libcef\common\main_delegate.cc @ 395]
+0f libcef!base::`anonymous namespace'::ThreadFunc+0xcc [Y:\work\CEF3_git\chromium\src\base\threading\platform_thread_win.cc @ 105]
+10 KERNEL32!BaseThreadInitThunk+0x14 [base\win32\client\thread.c @ 64]
+11 ntdll!RtlUserThreadStart+0x21 [minkernel\ntdll\rtlstrt.c @ 1153]
+```
+
+Thread 0 is already doing CefShutdown:
+
+```
+00 ntdll!ZwWaitForSingleObject+0x14 [minkernel\ntdll\daytona\objfre\amd64\usrstubs.asm @ 211]
+01 KERNELBASE!WaitForSingleObjectEx+0x93 [minkernel\kernelbase\synch.c @ 1328]
+02 libcef!base::WaitableEvent::Wait+0xab [Y:\work\CEF3_git\chromium\src\base\synchronization\waitable_event_win.cc @ 69]
+03 libcef!CefContext::Shutdown+0x10f [Y:\work\CEF3_git\chromium\src\cef\libcef\browser\context.cc @ 481]
+04 libcef!CefShutdown+0xb5 [Y:\work\CEF3_git\chromium\src\cef\libcef\browser\context.cc @ 272]
+05 CefSharp_Core!DomainBoundILStubClass.IL_STUB_PInvoke()+0x68
+06 CefSharp_Core!CefSharp::Cef::Shutdown+0x283 [c:\projects\cefsharp\cefsharp.core\cef.h @ 89]
+07 CefSharpOffscreenRepro!CefSharpOffscreenRepro.Program.Main(System.String[])+0x28b*** WARNING: Unable to verify checksum for D:\repos\reference-incorrectly-held-at-CefShutdown\CefSharpOffscreenRepro\bin\x64\Debug\CefSharpOffscreenRepro.exe
+ [D:\repos\reference-incorrectly-held-at-CefShutdown\CefSharpOffscreenRepro\Program.cs @ 64]
+08 CefSharpOffscreenRepro!CefSharpOffscreenRepro.Program.Main(System.String[])+0x1ae
+09 clr!CallDescrWorkerInternal+0x83 [f:\dd\ndp\clr\src\vm\amd64\CallDescrWorkerAMD64.asm @ 97]
+0a clr!CallDescrWorkerWithHandler+0x4e [f:\dd\ndp\clr\src\vm\callhelpers.cpp @ 89]
+0b clr!MethodDescCallSite::CallTargetWorker+0x102 [f:\dd\ndp\clr\src\vm\callhelpers.cpp @ 655]
+0c clr!MethodDescCallSite::Call_RetArgSlot+0x5 [f:\dd\ndp\clr\src\vm\callhelpers.h @ 423]
+0d clr!RunMain+0x266 [f:\dd\ndp\clr\src\vm\assembly.cpp @ 2659]
+0e clr!Assembly::ExecuteMainMethod+0xb7 [f:\dd\ndp\clr\src\vm\assembly.cpp @ 2780]
+0f clr!SystemDomain::ExecuteMainMethod+0x643 [f:\dd\ndp\clr\src\vm\appdomain.cpp @ 3755]
+10 clr!ExecuteEXE+0x3f [f:\dd\ndp\clr\src\vm\ceemain.cpp @ 3053]
+11 clr!_CorExeMainInternal+0xb2 [f:\dd\ndp\clr\src\vm\ceemain.cpp @ 2887]
+12 clr!_CorExeMain+0x14 [f:\dd\ndp\clr\src\vm\ceemain.cpp @ 2814]
+13 mscoreei!_CorExeMain+0x112 [f:\dd\ndp\clr\src\dlls\shim\shim.cpp @ 6425]
+14 MSCOREE!_CorExeMain_Exported+0x6c [onecore\com\netfx\windowsbuilt\shell_shim\v2api.cpp @ 1223]
+15 KERNEL32!BaseThreadInitThunk+0x14 [base\win32\client\thread.c @ 64]
+16 ntdll!RtlUserThreadStart+0x21 [minkernel\ntdll\rtlstrt.c @ 1153]
+```
+
+
+## Version 75.1.14
+
 I am loading a page, and as soon as it completes loading, I call `Cef.Shutdown()` and the process exits. You can see the source code [here](CefSharpOffscreenRepro/Program.cs).
 
 The issue reproduces in CefSharp 75, but I haven't been able to test with CefSharp 79. I see [similar CEF fixes](https://bitbucket.org/chromiumembedded/cef/commits/c7345f21bede2ad5a6831fcc1457494e589c7c4d?at=3904), but in those cases people mention that the **process crashes**, and in my case, the warning is just printed to the output stream or it only breaks when the app is attached to a debugger.
